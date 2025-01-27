@@ -1,3 +1,4 @@
+#include <notcurses/nckeys.h>
 #include <notcurses/notcurses.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -13,12 +14,18 @@ int main() {
 
   struct ncplane *stdplane = notcurses_stddim_yx(nc, &y, NULL);
 
-  char message[] = "Hello, World!";
-
-  ncplane_putstr_aligned(stdplane, y / 2, NCALIGN_CENTER, message);
-
-  notcurses_render(nc);
-  sleep(5);
+  ncinput input;
+  for (;;) {
+    notcurses_get(nc, NULL, &input);
+    if (input.evtype == NCTYPE_PRESS) {
+      if (input.id == NCKEY_RETURN) {
+        ncplane_cursor_move_yx(stdplane, input.y + 1, 0);
+      } else {
+        ncplane_putstr(stdplane, input.utf8);
+      }
+    }
+    notcurses_render(nc);
+  }
 
   notcurses_stop(nc);
   return 0;
